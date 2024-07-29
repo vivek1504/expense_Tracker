@@ -1,11 +1,16 @@
 import './App.css'
-import HeroSection from './Components/HeroSection'
+import ExpenseCard from './Components/ExpenseCard'
+import SignInPage from './Pages/SignInPage'
 import SignUpPage from './Pages/SignUpPage'
+import HeroSection from './Components/HeroSection'
 
 function App() {
   return (
     <>
-      <HeroSection />
+    <HeroSection />
+      <SignUpPage />
+      <SignInPage />
+      <ExpenseCard />
     </>
   )
 }

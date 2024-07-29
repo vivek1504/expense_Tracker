@@ -1,26 +1,40 @@
-import React from 'react';
-import bgContainer from '../assets/bgContainer.png'; 
-import LoginImage from '../assets/LoginImage.png';
-import upArrow from '../assets/upArrow.png';
-import SignUpPage from '../Pages/SignUpPage';
+import React from 'react'
+import { motion } from 'framer-motion';
+import logo from '../assets/logo.png';
+import userImg from '../assets/userImg.png';
+
 function HeroSection() {
   return (
-    <div className="flex items-center justify-center top-0 p-52 h-screen object-cover">
-      <div className="bg-white rounded-lg flex overflow-hidden items-center justify-center ">
-        <div className="relative w-[75%] h-full m-10">
-          <img src={bgContainer} alt="Background" className="object-cover w-full h-full" />
-          <div className="absolute inset-0 flex  justify-left">
-            <img src={LoginImage} alt="Login" className=" w-[500px] h-full" />
-          </div>
-          <div className='absolute bottom-3 right-0'>
-            <img src={upArrow} alt=""  className='h-[100px] w-[100px]'/>
-          </div>
-          <SignUpPage />
-        </div>
-        
-      </div>
-    </div>
-  );
+    <>
+       <div>
+       <nav className="bg-white text-green-800 border-gray-200 px-4  lg:px-6 py-2.5 h-28">
+                    <motion.div className=" flex flex-wrap justify-between"
+                        initial={{y:-100}}
+                        animate={{y: -10}}
+                        transition={{delay:0.2 , type: 'spring' , stiffness:120}}
+                    >
+                        <div>
+                          <img
+                          initial={{y:-100}}
+                          animate={{y: 0}}
+                          transition={{delay:0.2 , type: 'spring' , stiffness:120}}
+                              src={logo}
+                              className="mr-3 h-20 rounded-full"
+                              alt="Logo"
+                          />
+                          <span className='p-4 pt-8  text-2xl font-bold'>Brain Flow</span>
+                        </div>
+                      
+                        <img src={userImg} alt="" className='h-16  pr-4'/>
+
+                    </motion.div>
+
+                    
+                  
+            </nav>
+       </div>
+    </>
+  )
 }
 
-export default HeroSection;
+export default HeroSection
