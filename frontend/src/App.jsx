@@ -1,9 +1,13 @@
 import './App.css'
+import HeroSection from './Components/HeroSection'
+import SignUpPage from './Pages/SignUpPage'
 
 function App() {
-  return <div>
-
-  </div>
+  return (
+    <>
+      <HeroSection />
+    </>
+  )
 }
 
 export default App
