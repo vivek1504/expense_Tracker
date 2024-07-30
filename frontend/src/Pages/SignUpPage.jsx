@@ -8,18 +8,18 @@ function SignUpPage() {
   return (
     <>
 
-<div className="flex items-center justify-center top-0 p-52 h-screen object-cover">
+<div className="flex items-center justify-center top-0 p-20 h-screen object-cover">
       <div className="bg-white rounded-lg flex overflow-hidden items-center justify-center ">
         <div className="relative w-[75%] h-full m-10">
           <img src={bgContainer} alt="Background" className="object-cover w-full h-full" />
-          <div className="absolute inset-0 flex  justify-left">
-            <img src={LoginImage} alt="Login" className=" w-[500px] h-full" />
+          <div className="absolute inset-0 flex  justify-left overflow-hidden">
+            <img src={LoginImage} alt="Login" className=" w-[480px] h-full" />
           </div>
-          <div className='absolute bottom-3 right-0'>
-            <img src={upArrow} alt=""  className='h-[100px] w-[100px]'/>
+          <div className='absolute bottom-2 right-0'>
+            <img src={upArrow} alt=""  className='h-[90px] w-[90px]'/>
           </div>
 
-        <div className="w-[370px] absolute right-40 top-20 ">
+        <div className="w-[370px] absolute right-[100px] top-20 ">
           <h2 className="text-5xl font-bold text-center mb-8">Sign Up</h2>
           <form>
               <input  
