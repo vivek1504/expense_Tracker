@@ -1,0 +1,60 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  Int               @id @default(autoincrement())
+  email               String            @unique
+  name                String
+  number              Int               @unique
+  password            String
+  groupId             Int?
+  group               Group?            @relation(fields: [groupId], references: [id])
+  balances            Balance[]
+  createdAt           DateTime          @default(now())
+}
+
+model Group {
+  id                  Int                @id @default(autoincrement())
+  name                String
+  createdAt           DateTime           @default(now())
+  users               User[]
+  expenses            Expenses[] 
+}
+
+model Expenses {
+  id                  Int                 @id @default(autoincrement())
+  name                String
+  amount              BigInt
+  isSettled           Boolean             @default(false)
+  splitType           splitType
+  dues                Balance[]
+  groupId             Int
+  group               Group               @relation(fields: [groupId], references: [id])
+}
+
+model Balance {
+  id                  Int                 @id @default(autoincrement())
+  userId              Int
+  user                User                @relation(fields: [userId], references: [id])
+  amount              BigInt
+  expenseId           Int
+  expense             Expenses            @relation(fields: [expenseId], references: [id])
+}
+enum splitType {
+  EQUAL
+  PERCENTAGE
+  EXACT
+}
+
