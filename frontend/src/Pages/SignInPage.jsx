@@ -13,10 +13,10 @@ function SignInPage() {
         <div className="relative w-[75%] h-full m-14">
           <img src={bgContainer} alt="Background" className="object-cover w-full h-full" />
           <div className="absolute inset-0 flex  justify-left overflow-hidden">
-            <img src={LoginImage} alt="Login" className=" w-[480px] h-[630px]" />
+            <img src={LoginImage} alt="Login" className=" w-[450px] h-[640px]" />
           </div>
           <div className='absolute right-0 bottom-2'>
-            <img src={upArrow} alt=""  className='h-[90px] w-[90px]'/>
+            <img src={upArrow} alt=""  className='h-[100px] w-[100px]'/>
           </div>
           <div className="w-[370px] absolute right-[100px] top-20 mt-10 ">
             <h2 className="text-5xl font-bold text-center mb-8">Sign In</h2>

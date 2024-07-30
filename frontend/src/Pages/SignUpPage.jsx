@@ -21,7 +21,7 @@ function SignUpPage() {
       alert("Passwords do not match")
       return
     }
-    fetch("http://localhost:8000/api/users/signup/", {
+    fetch("http://localhost:3000/users/signup", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

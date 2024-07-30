@@ -7,17 +7,16 @@ export const expenseRouter = Router();
 const prisma = new PrismaClient();
 
 expenseRouter.post("/addExpenses/equal",authMiddleware, async (req, res) => {
-    const { groupid, amount, name, userId }: { groupid: number, amount: number, name: string, userId: number } = req.body;
-  
+    const { groupid, amount, name }: { groupid: number, amount: number, name: string } = req.body;    
+
     const result = z.object({
       groupid: z.number(),
       amount: z.number(),
       name: z.string(),
-      userId: z.number(),
-    }).safeParse({ groupid, amount, name, userId });
+    }).safeParse({ groupid, amount, name });
   
     if (!result.success) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+      return res.status(400).json({ message: 'Invalid Inputs' });
     }
   
     try {
@@ -29,7 +28,8 @@ expenseRouter.post("/addExpenses/equal",authMiddleware, async (req, res) => {
       if (!group) {
         return res.status(404).json({ message: 'Group not found' });
       }
-  
+      
+      const users = group.users
       const totalUsers = group.users.length;
       const amountPerUser = amount / totalUsers;
   
@@ -44,9 +44,8 @@ expenseRouter.post("/addExpenses/equal",authMiddleware, async (req, res) => {
         },
       });
   
-      const dueUsers = group.users.filter(user => user.id !== userId);
   
-      const expenseCreation = dueUsers.map(user => {
+      const expenseCreation = users.map(user => {
         return prisma.balance.create({
           data: {
             userId: user.id,
@@ -55,7 +54,7 @@ expenseRouter.post("/addExpenses/equal",authMiddleware, async (req, res) => {
           },
         });
       });
-  
+
       const balances = await Promise.all(expenseCreation);
   
       res.status(201).json({ message: 'Expense created successfully', expense, balances });
@@ -82,7 +81,7 @@ expenseRouter.post("/addExpenses/equal",authMiddleware, async (req, res) => {
     }).safeParse({ groupid, amount, name, users });
   
     if (!result.success) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+      return res.status(400).json({ message: 'Invalid Inputs' });
     }
   
     let percents = 0;
@@ -115,9 +114,7 @@ expenseRouter.post("/addExpenses/equal",authMiddleware, async (req, res) => {
         },
       });
   
-      const dueUsers = users.filter((user: any) => user.userId !== userId);
-  
-      const expenseCreation = dueUsers.map((user: any) => {
+      const expenseCreation = users.map((user: any) => {
         return prisma.balance.create({
           data: {
             userId: user.userId,
@@ -140,7 +137,6 @@ expenseRouter.post("/addExpenses/equal",authMiddleware, async (req, res) => {
   expenseRouter.post("/addExpenses/exact",authMiddleware, async (req,res)=>{
     const {groupid, amount, name}: { groupid: number, amount: number, name: string } = req.body;
     const users = req.body.users;
-    const userId = req.body.userId;
   
     const result = z.object({
       groupid: z.number(),
@@ -153,7 +149,7 @@ expenseRouter.post("/addExpenses/equal",authMiddleware, async (req, res) => {
     }).safeParse({ groupid, amount, name, users });
   
     if (!result.success) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+      return res.status(400).json({ message: 'Invalid Inputs' });
     }
   
     let totalAmount = 0;
@@ -206,46 +202,28 @@ expenseRouter.post("/addExpenses/equal",authMiddleware, async (req, res) => {
     }
   })
 
-expenseRouter.get("/getExpenses",authMiddleware, async(req,res)=>{
-    const userId = req.body.userId;
+expenseRouter.get("/getExpenses",authMiddleware, async (req, res) => {
+  const groupId = parseInt(req.body.groupId);
 
-    try {
-        const expenses = await prisma.expenses.findMany({
-            include : {
-                dues : true
-            },
-            where : {
-                dues : {
-                    some : {
-                        userId
-                    }
-                }
-            }
-        })
+  if(!groupId){
+    return res.status(400).json({ message: 'Invalid inputs' });
+  }
 
-        res.status(200).json({expenses})
+  try {
+    const group = await prisma.group.findUnique({
+      where: {
+        id: groupId,
+      },
+      include: { expenses: true },
+    });
+
+    if (!group) {
+      return res.status(404).json({ message: 'Group not found' });
     }
-    catch(error){ 
-        console.error(error);
-        res.status(500).json({ message: 'Error fetching expenses' });
-    }
-})
 
-expenseRouter.get("/overallExpenses",authMiddleware, async(req,res)=>{
-    const groupId = req.body.groupId;
-
-    try {
-        const expenses = await prisma.group.findUnique({
-            where : { id : groupId },
-            include : {
-                expenses : true
-            }
-        })
-
-        res.status(200).json({expenses})
-    }
-    catch(error){ 
-        console.error(error);
-        res.status(500).json({ message: 'Error fetching expenses' });
-    }
-})
+    res.status(200).json({ message: 'Expenses fetched successfully', group });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error fetching expenses' });
+  }
+});

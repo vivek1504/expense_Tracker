@@ -5,6 +5,8 @@ import bcrypt from "bcryptjs"
 import { sign } from "jsonwebtoken";
 import dotenv from "dotenv";
 import { authMiddleware } from "../middlerwares/authmiddlerware";
+import pdfkit from "pdfkit";
+import fs from "fs";
 dotenv.config();
 
 export const userRouter = Router();
@@ -15,7 +17,7 @@ const userSignupSchema = z.object({
     name: z.string(),
     email: z.string().email(),
     password: z.string(),
-    number: z.number(),
+    number: z.string(),
 });
 
 const loginUserSchema = z.object({
@@ -37,9 +39,9 @@ userRouter.post("/signup",async(req,res)=>{
 
       const existingUser = await prisma.user.findUnique({
             where: { email },
-          });
+        });
       
-          if (existingUser) {
+      if (existingUser) {
             return res.status(400).json({ message: 'User already exists' });
         }
 
@@ -99,13 +101,13 @@ userRouter.post("/login",async(req,res)=>{
 })
 
 userRouter.post("/CreateGroup",authMiddleware, async (req, res) => {
-  const { email, groupname, groupMembers }: { email: string, groupname: string, groupMembers: string[] } = req.body;
+  const { groupname }: { groupname: string } = req.body;
+  const userId = req.body.userId.userId;
 
   const result = z.object({
-    email: z.string().email(),
+    userId: z.number(),
     groupname: z.string(),
-    groupMembers: z.array(z.string())
-  }).safeParse({ email, groupname, groupMembers });
+  }).safeParse({ userId, groupname });
 
   if (!result.success) {
     return res.status(400).json({ message: 'invalid credentials' });
@@ -115,9 +117,11 @@ userRouter.post("/CreateGroup",authMiddleware, async (req, res) => {
     const group = await prisma.group.create({
       data: {
         name: groupname,
-        users: {
-          connect: groupMembers.map((email) => ({ email })),
-        },
+        users : {
+          connect : {
+            id : userId
+          }
+        }  
       },
     });
 
@@ -128,4 +132,105 @@ userRouter.post("/CreateGroup",authMiddleware, async (req, res) => {
     res.status(500).json({ message: 'Error creating group' });
   }
 
+});
+
+userRouter.post("/addUserToGroup",authMiddleware, async (req, res) => {
+  const { users}: { users: string[] } = req.body;
+  const groupid = parseInt(req.body.groupId);
+
+  const result = z.object({
+    groupid: z.number(),
+    users: z.array(z.string().email()),
+  }).safeParse({ groupid, users });
+
+  if(!result.success){
+    return res.status(400).json({ message: 'Invalid inputs' });
+  }
+
+  try {
+    const usersInfo = await prisma.user.findMany({
+      where: {
+        email:{
+          in : users
+        }
+      }
+    })
+
+    const group = await prisma.group.update({
+        where : {
+          id : groupid
+        },
+        data: {
+          users: {
+            connect: usersInfo.map((user) => {
+              return { id: user.id };
+            }),
+          },
+        },
+    });
+
+    res.status(201).json({ message: 'User added to group successfully', group });
+  }
+  catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error adding user to group' });
+  }
+})
+
+userRouter.get("/download",authMiddleware, async (req, res) => {
+  const userId = req.body.userId;
+  try {
+  const groups = await prisma.group.findMany({
+    where: {
+      users: {
+        some: {
+          id: userId,
+        },
+      },
+    },
+    include: { users: true, expenses: {
+      include : {
+        balances : true
+      }
+    } },
+  });
+
+  const doc = new pdfkit();
+  doc.pipe(fs.createWriteStream('balances.pdf'));
+  doc.text('Balances\n\n');
+  doc.text(groups.map((group) => {
+    return `Group: ${group.name}\n` + group.users.map((user) => {
+      return `${user.name}\n`;
+    }).join('') + '\n';
+  }).join('\n'));
+  doc.end();
+  res.json({ message: 'Downloaded successfully',groups });
+  }
+  catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error downloading balances' });
+  }
+})
+
+userRouter.get("/getInfo",authMiddleware, async (req, res) => {
+  const groupId = parseInt(req.body.groupId);
+
+  if(!groupId){
+    return res.status(400).json({ message: 'Invalid inputs' });
+  }
+
+  try {
+    const group = await prisma.group.findUnique({
+      where: {
+        id: groupId,
+      },
+      include: { users: true },
+    });
+
+    res.json({ message: 'Group info fetched successfully', group });
+  }
+  catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error fetching group info' });
+  }
 });
