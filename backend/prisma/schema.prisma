@@ -17,7 +17,7 @@ model User {
   id                  Int               @id @default(autoincrement())
   email               String            @unique
   name                String
-  number              Int               @unique
+  number              String            @unique
   password            String
   groupId             Int?
   group               Group?            @relation(fields: [groupId], references: [id])
@@ -36,10 +36,9 @@ model Group {
 model Expenses {
   id                  Int                 @id @default(autoincrement())
   name                String
-  amount              BigInt
-  isSettled           Boolean             @default(false)
-  splitType           splitType
-  dues                Balance[]
+  amount              Int
+  splitType           splitType?
+  balances            Balance[]
   groupId             Int
   group               Group               @relation(fields: [groupId], references: [id])
 }
@@ -48,7 +47,7 @@ model Balance {
   id                  Int                 @id @default(autoincrement())
   userId              Int
   user                User                @relation(fields: [userId], references: [id])
-  amount              BigInt
+  amount              Int
   expenseId           Int
   expense             Expenses            @relation(fields: [expenseId], references: [id])
 }
