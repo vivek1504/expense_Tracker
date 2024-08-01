@@ -1,13 +1,13 @@
 import React from 'react'
-import Navbar from '../Components/Navbar'
+import Navbar from '../components/Navbar'
 import container from '../assets/container.png'
-import ExpenseCard from '../Components/ExpenseCard'
-import ExpenseForm from '../Components/ExpenseForm'
-import HistoryCard from '../Components/HistoryCard'
+import ExpenseCard from '../components/ExpenseCard'
+import ExpenseForm from '../components/ExpenseForm'
+import HistoryCard from '../components/HistoryCard'
 import Download from '../assets/Download.png'
 import title from '../assets/title.png'
-import SplitOptions from '../Components/SplitOptionCard'
 import add from '../assets/add.png'
+import SplitOptions from '../components/SplitOptionCard'
 
 function HeroSection() {
   return (

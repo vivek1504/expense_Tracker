@@ -38,9 +38,11 @@ model Expenses {
   name                String
   amount              Int
   splitType           splitType?
+  expenseDate         String
   balances            Balance[]
   groupId             Int
   group               Group               @relation(fields: [groupId], references: [id])
+  description         String?
 }
 
 model Balance {

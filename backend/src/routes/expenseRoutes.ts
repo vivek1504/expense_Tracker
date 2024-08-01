@@ -6,14 +6,27 @@ import { authMiddleware } from "../middlerwares/authmiddlerware";
 export const expenseRouter = Router(); 
 const prisma = new PrismaClient();
 
+const expenseDate = ()=> {
+  const date = new Date();
+
+  const day = String(date.getDate()).padStart(2, '0');
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const month = monthNames[date.getMonth()];
+  const year = date.getFullYear();
+
+  return `${day} ${month} ${year}`;
+}
+
 expenseRouter.post("/addExpenses/equal",authMiddleware, async (req, res) => {
-    const { groupid, amount, name }: { groupid: number, amount: number, name: string } = req.body;    
+    const { groupid, amount, name, description }: { groupid: number, amount: number, name: string , description : string} = req.body;    
 
     const result = z.object({
       groupid: z.number(),
       amount: z.number(),
       name: z.string(),
-    }).safeParse({ groupid, amount, name });
+      description: z.string()
+    }).safeParse({ groupid, amount, name ,description});
   
     if (!result.success) {
       return res.status(400).json({ message: 'Invalid Inputs' });
@@ -41,6 +54,8 @@ expenseRouter.post("/addExpenses/equal",authMiddleware, async (req, res) => {
           group: {
             connect: { id: groupid },
           },
+          expenseDate: expenseDate(),
+          description
         },
       });
   
@@ -66,7 +81,7 @@ expenseRouter.post("/addExpenses/equal",authMiddleware, async (req, res) => {
   
   
   expenseRouter.post("/addExpenses/percentage",authMiddleware, async (req, res) => {
-    const { groupid, amount, name}: { groupid: number, amount: number, name: string } = req.body;
+    const { groupid, amount, name , description}: { groupid: number, amount: number, name: string , description : string } = req.body;
     const users = req.body.users;
     const userId = req.body.userId;
   
@@ -74,11 +89,12 @@ expenseRouter.post("/addExpenses/equal",authMiddleware, async (req, res) => {
       groupid: z.number(),
       amount: z.number(),
       name: z.string(),
+      description: z.string(),
       users: z.array(z.object({
         userId: z.number(),
         percent: z.number(),
       }))
-    }).safeParse({ groupid, amount, name, users });
+    }).safeParse({ groupid, amount, name, users ,description });
   
     if (!result.success) {
       return res.status(400).json({ message: 'Invalid Inputs' });
@@ -111,6 +127,8 @@ expenseRouter.post("/addExpenses/equal",authMiddleware, async (req, res) => {
           group: {
             connect: { id: groupid },
           },
+          expenseDate : expenseDate(),
+          description 
         },
       });
   
@@ -135,18 +153,19 @@ expenseRouter.post("/addExpenses/equal",authMiddleware, async (req, res) => {
   })
   
   expenseRouter.post("/addExpenses/exact",authMiddleware, async (req,res)=>{
-    const {groupid, amount, name}: { groupid: number, amount: number, name: string } = req.body;
+    const {groupid, amount, name,description}: { groupid: number, amount: number, name: string, description : string } = req.body;
     const users = req.body.users;
   
     const result = z.object({
       groupid: z.number(),
       amount: z.number(),
       name: z.string(),
+      description: z.string(),
       users: z.array(z.object({
         userId: z.number(),
         amount: z.number(),
       }))
-    }).safeParse({ groupid, amount, name, users });
+    }).safeParse({ groupid, amount, name, users, description });
   
     if (!result.success) {
       return res.status(400).json({ message: 'Invalid Inputs' });
@@ -179,6 +198,8 @@ expenseRouter.post("/addExpenses/equal",authMiddleware, async (req, res) => {
           group: {
             connect: { id: groupid },
           },
+          expenseDate: expenseDate(),
+          description
         },
       });
     

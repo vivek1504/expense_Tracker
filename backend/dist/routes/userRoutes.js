@@ -160,76 +160,39 @@ exports.userRouter.post("/addUserToGroup", authmiddlerware_1.authMiddleware, (re
     }
 }));
 exports.userRouter.get("/download", authmiddlerware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const userId = req.body.userId;
+    const groupid = req.body.groupid;
     try {
-        const groups = yield prisma.group.findMany({
+        const groups = yield prisma.group.findFirst({
             where: {
-                users: {
-                    some: {
-                        id: userId,
-                    },
-                },
+                id: groupid
             },
-            include: { users: true, expenses: {
-                    include: {
-                        balances: true
-                    }
-                } },
+            include: {
+                users: true,
+                expenses: true
+            }
         });
         const doc = new pdfkit_1.default();
         doc.pipe(fs_1.default.createWriteStream('balances.pdf'));
         doc.text('Balances\n\n');
-        doc.text(groups.map((group) => {
-            return `Group: ${group.name}\n` + group.users.map((user) => {
-                return `${user.name}\n`;
-            }).join('') + '\n';
-        }).join('\n'));
+        doc.text('Group Name :' + (groups === null || groups === void 0 ? void 0 : groups.name) + '\n\n');
+        doc.text('Users\n\n');
+        groups === null || groups === void 0 ? void 0 : groups.users.forEach((user) => {
+            doc.text(user.name + ' : ' + user.email + '\n');
+        });
+        doc.text('\n\n');
+        doc.text('Expenses\n\n');
+        groups === null || groups === void 0 ? void 0 : groups.expenses.forEach((expense) => {
+            doc.text('Name : ' + expense.name + '\n');
+            doc.text('Amount : ' + expense.amount + '\n');
+            doc.text('Description : ' + expense.description + '\n');
+            doc.text('Date : ' + expense.expenseDate + '\n\n');
+        });
         doc.end();
-        res.json({ message: 'Downloaded successfully', groups });
+        res.status(200).json({ message: 'Balances downloaded successfully' });
     }
     catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error downloading balances' });
-    }
-}));
-exports.userRouter.post("/addExpense", authmiddlerware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { name, amount, groupId, splitType, users } = req.body;
-    const userId = req.body.userId.userId;
-    const result = zod_1.z.object({
-        userId: zod_1.z.number(),
-        name: zod_1.z.string(),
-        amount: zod_1.z.number(),
-        groupId: zod_1.z.number(),
-        splitType: zod_1.z.string(),
-        users: zod_1.z.array(zod_1.z.object({
-            email: zod_1.z.string().email(),
-            amount: zod_1.z.number()
-        }))
-    }).safeParse({ userId, name, amount, groupId, splitType, users });
-    if (!result.success) {
-        return res.status(400).json({ message: 'invalid credentials' });
-    }
-    if (splitType !== 'PERCENTAGE' || 'EXACT' || 'EQUAL') {
-        return res.status(400).json({ message: 'Invalid split type' });
-    }
-    try {
-        const expense = yield prisma.expenses.create({
-            data: {
-                name,
-                amount,
-                splitType,
-                group: {
-                    connect: {
-                        id: groupId
-                    }
-                },
-            }
-        });
-        return res.status(201).json({ message: 'Expense created successfully', expense });
-    }
-    catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error creating expense' });
     }
 }));
 exports.userRouter.get("/getInfo", authmiddlerware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {

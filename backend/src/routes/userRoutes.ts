@@ -178,34 +178,38 @@ userRouter.post("/addUserToGroup",authMiddleware, async (req, res) => {
 })
 
 userRouter.get("/download",authMiddleware, async (req, res) => {
-  const userId = req.body.userId;
+  const groupid = req.body.groupid;
   try {
-  const groups = await prisma.group.findMany({
-    where: {
-      users: {
-        some: {
-          id: userId,
-        },
+  const groups = await prisma.group.findFirst({
+      where : {
+        id : groupid
       },
-    },
-    include: { users: true, expenses: {
       include : {
-        balances : true
+        users : true,
+        expenses : true
       }
-    } },
-  });
+  })
 
   const doc = new pdfkit();
   doc.pipe(fs.createWriteStream('balances.pdf'));
-  doc.text('Balances\n\n');
-  doc.text(groups.map((group) => {
-    return `Group: ${group.name}\n` + group.users.map((user) => {
-      return `${user.name}\n`;
-    }).join('') + '\n';
-  }).join('\n'));
+  doc.text('Balances :\n');
+  doc.text('Group Name :' + groups?.name + '\n\n');
+  doc.text('Users\n\n');
+  groups?.users.forEach((user) => {
+    doc.text(user.name + ' : ' + user.email + '\n');
+  });
+  doc.text('\n\n');
+  doc.text('Expenses\n\n');
+  groups?.expenses.forEach((expense) => {
+    doc.text('Name : ' + expense.name + '\n');
+    doc.text('Amount : ' + expense.amount + '\n');
+    doc.text('Description : ' + expense.description + '\n');
+    doc.text('Date : ' + expense.expenseDate + '\n\n');
+  });
+
   doc.end();
-  res.json({ message: 'Downloaded successfully',groups });
-  }
+  res.status(200).json({ message: 'Balances downloaded successfully' });
+}
   catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error downloading balances' });

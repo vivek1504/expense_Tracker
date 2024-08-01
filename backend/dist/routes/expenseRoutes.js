@@ -16,13 +16,23 @@ const zod_1 = require("zod");
 const authmiddlerware_1 = require("../middlerwares/authmiddlerware");
 exports.expenseRouter = (0, express_1.Router)();
 const prisma = new client_1.PrismaClient();
+const expenseDate = () => {
+    const date = new Date();
+    const day = String(date.getDate()).padStart(2, '0');
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const month = monthNames[date.getMonth()];
+    const year = date.getFullYear();
+    return `${day} ${month} ${year}`;
+};
 exports.expenseRouter.post("/addExpenses/equal", authmiddlerware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { groupid, amount, name } = req.body;
+    const { groupid, amount, name, description } = req.body;
     const result = zod_1.z.object({
         groupid: zod_1.z.number(),
         amount: zod_1.z.number(),
         name: zod_1.z.string(),
-    }).safeParse({ groupid, amount, name });
+        description: zod_1.z.string()
+    }).safeParse({ groupid, amount, name, description });
     if (!result.success) {
         return res.status(400).json({ message: 'Invalid Inputs' });
     }
@@ -45,6 +55,8 @@ exports.expenseRouter.post("/addExpenses/equal", authmiddlerware_1.authMiddlewar
                 group: {
                     connect: { id: groupid },
                 },
+                expenseDate: expenseDate(),
+                description
             },
         });
         const expenseCreation = users.map(user => {
@@ -65,18 +77,19 @@ exports.expenseRouter.post("/addExpenses/equal", authmiddlerware_1.authMiddlewar
     }
 }));
 exports.expenseRouter.post("/addExpenses/percentage", authmiddlerware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { groupid, amount, name } = req.body;
+    const { groupid, amount, name, description } = req.body;
     const users = req.body.users;
     const userId = req.body.userId;
     const result = zod_1.z.object({
         groupid: zod_1.z.number(),
         amount: zod_1.z.number(),
         name: zod_1.z.string(),
+        description: zod_1.z.string(),
         users: zod_1.z.array(zod_1.z.object({
             userId: zod_1.z.number(),
             percent: zod_1.z.number(),
         }))
-    }).safeParse({ groupid, amount, name, users });
+    }).safeParse({ groupid, amount, name, users, description });
     if (!result.success) {
         return res.status(400).json({ message: 'Invalid Inputs' });
     }
@@ -103,6 +116,8 @@ exports.expenseRouter.post("/addExpenses/percentage", authmiddlerware_1.authMidd
                 group: {
                     connect: { id: groupid },
                 },
+                expenseDate: expenseDate(),
+                description
             },
         });
         const expenseCreation = users.map((user) => {
@@ -123,17 +138,18 @@ exports.expenseRouter.post("/addExpenses/percentage", authmiddlerware_1.authMidd
     }
 }));
 exports.expenseRouter.post("/addExpenses/exact", authmiddlerware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { groupid, amount, name } = req.body;
+    const { groupid, amount, name, description } = req.body;
     const users = req.body.users;
     const result = zod_1.z.object({
         groupid: zod_1.z.number(),
         amount: zod_1.z.number(),
         name: zod_1.z.string(),
+        description: zod_1.z.string(),
         users: zod_1.z.array(zod_1.z.object({
             userId: zod_1.z.number(),
             amount: zod_1.z.number(),
         }))
-    }).safeParse({ groupid, amount, name, users });
+    }).safeParse({ groupid, amount, name, users, description });
     if (!result.success) {
         return res.status(400).json({ message: 'Invalid Inputs' });
     }
@@ -160,6 +176,8 @@ exports.expenseRouter.post("/addExpenses/exact", authmiddlerware_1.authMiddlewar
                 group: {
                     connect: { id: groupid },
                 },
+                expenseDate: expenseDate(),
+                description
             },
         });
         const expenseCreation = users.map((user) => {
@@ -180,37 +198,21 @@ exports.expenseRouter.post("/addExpenses/exact", authmiddlerware_1.authMiddlewar
     }
 }));
 exports.expenseRouter.get("/getExpenses", authmiddlerware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const userId = req.body.userId;
+    const groupId = parseInt(req.body.groupId);
+    if (!groupId) {
+        return res.status(400).json({ message: 'Invalid inputs' });
+    }
     try {
-        const expenses = yield prisma.expenses.findMany({
-            include: {
-                balances: true
-            },
+        const group = yield prisma.group.findUnique({
             where: {
-                balances: {
-                    some: {
-                        userId
-                    }
-                }
-            }
+                id: groupId,
+            },
+            include: { expenses: true },
         });
-        res.status(200).json({ expenses });
-    }
-    catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error fetching expenses' });
-    }
-}));
-exports.expenseRouter.get("/overallExpenses", authmiddlerware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const groupId = req.body.groupId;
-    try {
-        const expenses = yield prisma.group.findUnique({
-            where: { id: groupId },
-            include: {
-                expenses: true
-            }
-        });
-        res.status(200).json({ expenses });
+        if (!group) {
+            return res.status(404).json({ message: 'Group not found' });
+        }
+        res.status(200).json({ message: 'Expenses fetched successfully', group });
     }
     catch (error) {
         console.error(error);
