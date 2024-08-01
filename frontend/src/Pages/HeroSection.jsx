@@ -20,8 +20,8 @@ function HeroSection() {
           <ExpenseCard />
           </div>
           <div className='absolute right-0 mt-0'>
-            {/* <SplitOptions /> */}
-            <ExpenseForm  />
+            <SplitOptions />
+            {/* <ExpenseForm  /> */}
           </div>
           <div className='absolute left-[150px] mt-[195px] pr-[100px]'>
             <HistoryCard />
@@ -44,6 +44,15 @@ function HeroSection() {
           <div className="flex flex-col items-start font-sans ">
             <div className="text-7xl font-bold">Manage your</div>
             <div className="text-7xl font-bold pt-4">Daily All Expenses</div>
+          </div>
+          </div>
+
+          <div className='absolute right-[510px] top-[200px] overflow-hidden'>
+          <div class="flex -space-x-4 rtl:space-x-reverse">
+              <img class="w-14 h-14 border-2 border-white rounded-full" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSy_JmafxKbli9Es5QUvL6d-qIdOd5RmExsvA&s" alt="" />
+              <img class="w-14 h-14 border-2 border-white rounded-full" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTSLU5_eUUGBfxfxRd4IquPiEwLbt4E_6RYMw&s" alt="" />
+              <img class="w-14 h-14 border-2 border-white rounded-full" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSy_JmafxKbli9Es5QUvL6d-qIdOd5RmExsvA&s" alt="" />
+              <img class="w-14 h-14 border-2 border-white rounded-full" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTSLU5_eUUGBfxfxRd4IquPiEwLbt4E_6RYMw&s" alt="" />
           </div>
           </div>
 

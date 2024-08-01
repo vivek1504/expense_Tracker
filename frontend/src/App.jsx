@@ -4,9 +4,7 @@ import HeroSection from './Pages/HeroSection'
 
 function App() {
   return (
-    <>
-      <HeroSection></HeroSection>
-    </>
+   
   )
 }
 

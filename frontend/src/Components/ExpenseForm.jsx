@@ -18,7 +18,7 @@ const ExpenseForm = () => {
             </div>    
 
             <div className="mb-2">
-                <label for="date" className="block text-gray-700 text-sm font-bold mb-2">Date</label>
+                <label for="date" className="block text-gray-700 text-sm font-bold pr-6 mb-2">Date</label>
                 <input type="date" id="date" className="shadow appearance-none border rounded-2xl h-[50px] w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
             </div>
 
